@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Faili nimi, mida skript töötlema peab
+sisendfail="nimekiri.txt"
+
+# 1. KONTROLL: Kas sisendfail on üldse olemas ja kas see on fail
+if [ ! -f "$sisendfail" ]; then
+    echo "Hoiatus: $sisendfail pole fail või seda ei eksisteeri!"
+    exit 1
+fi
+
+# Loeb faili rida-realt, eraldades eesnime ja perenime
+while read -r eesnimi perenimi || [ -n "$eesnimi" ]; do
+    # Kui rida on tühi, liigub järgmise juurde
+    [ -z "$eesnimi" ] && continue
+
+    # Muudab nimed väiketähtedeks ja asendab täpitähed (õ->o, ü->u, ä->a, ö->o)
+    eesnimi_puhas=$(echo "$eesnimi" | tr 'A-Z' 'a-z' | tr 'õüäö' 'ouao')
+    perenimi_puhas=$(echo "$perenimi" | tr 'A-Z' 'a-z' | tr 'õüäö' 'ouao')
+
+    # Liidab eesnime ja perenime punktiga kokku kasutajanimeks
+    kasutajanimi="${eesnimi_puhas}.${perenimi_puhas}"
+
+    # Genereerib ülesandes antud valemiga juhusliku 12-kohalise parooli
+    parool=$(date +%s%N${RANDOM}${RANDOM} | sha256sum | head -c12)
+
+    # Loob süsteemi uue kasutaja koos kodukataloogiga
+    sudo useradd -m -s /bin/bash "$kasutajanimi" 2>/dev/null
+
+    # Määrab äsja loodud kasutajale genereeritud parooli
+    echo "$kasutajanimi:$parool" | sudo chpasswd 2>/dev/null
+
+    # Väljastab ekraanile tulemuse formaadis: eesnimi.perenimi parool
+    echo "$kasutajanimi $parool"
+
+done < "$sisendfail"
