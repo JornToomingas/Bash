@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Salvestab esimese argumendi failiks ja teise oodatavateks õigusteks
+fail="$1"
+oodatavad_oigused="$2"
+
+# Kontrollib, kas sisestatud teekond on üldse olemas
+if [ ! -e "$fail" ]; then
+    echo "Hoiatus: faili $fail ei ole olemas!"
+    exit 1
+fi
+
+# Kontrollib, kas tegemist on failiga (mitte kaustaga)
+if [ ! -f "$fail" ]; then
+    echo "Hoiatus: $fail pole fail!"
+    exit 1
+fi
+
+# Loeb faili praegused numbrilised õigused
+praegused_oigused=$(stat -c %a "$fail")
+
+# Kontrollib, kas praegused õigused klapivad oodatavatega
+if [ "$praegused_oigused" -eq "$oodatavad_oigused" ]; then
+    echo "Fail $fail on olemas ja õigustega korrektselt määratud."
+else
+    echo "Hoiatus: faili $fail õigused on $praegused_oigused, peaksid olema $oodatavad_oigused!"
+fi
