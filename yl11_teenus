@@ -1,0 +1,24 @@
+                                                                            
+#!/bin/bash
+
+# Kasutajaandmete küsimine
+read -p "Sisesta uue kasutaja nimi: " kasutajanimi
+read -s -p "Sisesta kasutaja parool: " parool
+echo ""
+
+# Kasutaja loomine ja parooli määramine
+sudo useradd -m -s /bin/bash "$kasutajanimi"
+echo "$kasutajanimi:$parool" | sudo chpasswd
+
+# Kataloogi ja faili teekonna määramine mugavamaks halduseks
+kaust="/home/$kasutajanimi/kataloog"
+fail="$kaust/teretulemast_${kasutajanimi}.txt"
+
+# Kausta ja faili loomine
+sudo mkdir -p "$kaust"
+sudo touch "$fail"
+
+# Õiguste andmine uuele kasutajale
+sudo chown -R "$kasutajanimi":"$kasutajanimi" "$kaust"
+
+echo "Kasutaja $kasutajanimi ja failid on edukalt loodud!"
